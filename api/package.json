@@ -1,7 +1,7 @@
 {
-  "name": "asuna-api",
+  "name": "JUBMS-api",
   "version": "1.1.1",
-  "description": "API for Asuna",
+  "description": "API for JUBMS",
   "main": "src/server.js",
   "private": true,
   "scripts": {
@@ -12,16 +12,7 @@
     "eslint-check": "eslint . --ext .js",
     "lint": "yarn format-check && yarn eslint-check"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lauslim12/Asuna.git"
-  },
-  "author": "Nicholas Dwiarto <nicholasdwiarto@yahoo.com> (https://nicholasdw.com)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/lauslim12/Asuna/issues"
-  },
-  "homepage": "https://github.com/lauslim12/Asuna#readme",
+  
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
