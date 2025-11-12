@@ -1,0 +1,37 @@
+[
+  {
+    "_id": "5c8a1d5b0190b214360dc056",
+    "firstName": "Mark",
+    "lastName": "Transformer",
+    "address": "United States of America",
+    "birthdate": "2000-04-01",
+    "email": "mark-transformer@yahoo.com",
+    "username": "mark",
+    "password": "test1234",
+    "passwordConfirm": "test1234",
+    "role": "owner"
+  },
+  {
+    "_id": "600e764744995c00179f86cd",
+    "firstName": "Muhammad",
+    "lastName": "Dzulfiqar Ramadhan",
+    "address": "Jl. Scientia Boulevard, Gading Serpong",
+    "birthdate": "1999-12-12",
+    "email": "muhammad.dzulfiqar@student.umn.ac.id",
+    "username": "dzulfiqar12",
+    "password": "test1234",
+    "passwordConfirm": "test1234",
+    "role": "admin"
+  },
+  {
+    "_id": "600f7fb8f75d2100173e013a",
+    "firstName": "Alfatah",
+    "lastName": "Wibisono",
+    "address": "Jl. Slamet Riyadi, Surakarta",
+    "birthdate": "2000-02-02",
+    "email": "david1776@gmail.com",
+    "username": "alfatah",
+    "password": "test1234",
+    "passwordConfirm": "test1234"
+  }
+]
