@@ -1,7 +1,7 @@
 {
   "projects": {
-    "web": {
-      "root": "web"
+    "frontend": {
+      "root": "frontend"
     }
   }
 }
