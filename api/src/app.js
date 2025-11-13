@@ -1,7 +1,6 @@
-// Natural imports.
 const path = require('path');
 
-// Third party imports.
+// Third-party imports
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
@@ -13,7 +12,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const xss = require('xss-clean');
 
-// Routing
+// Routers
 const employeeRouter = require('./routes/employeeRoutes');
 const floorRouter = require('./routes/floorRoutes');
 const orderRouter = require('./routes/orderRoutes');
@@ -22,64 +21,66 @@ const userRouter = require('./routes/userRoutes');
 const visitorRouter = require('./routes/visitorRoutes');
 const voucherRouter = require('./routes/voucherRoutes');
 
-// Utilities
+// Utils
 const AppError = require('./utils/appError');
-
-// Middlewares
 const errorMiddleware = require('./middlewares/errorMiddleware');
 
-// Application Setup.
+// Init app
 const app = express();
 
-// Global Middlewares.
-// Enable CORS (Access-Control-Allow-Origin: only from the client!)
-app.use(cors({ origin: process.env.CLIENT_SIDE_URL }));
+// ---------------------
+// 🚀 CORS FIX FOR PRODUCTION
+// ---------------------
+app.use(cors({
+  origin: process.env.CLIENT_SIDE_URL,   // frontend vercel URL
+  credentials: true                      // allow cookies
+}));
 
-// Before the real request is done, first respond to the OPTIONS request (it's a HTTP method).
-// Send back the Access-Control-Allow-Origin to confirm that the request is safe to send.
-// Apply this request on everything.
-app.options('*', cors({ origin: process.env.CLIENT_SIDE_URL }));
+app.options('*', cors({
+  origin: process.env.CLIENT_SIDE_URL,
+  credentials: true
+}));
 
-// Trust Proxies
-app.enable('trust proxy');
+// Trust proxy (Render uses reverse proxy)
+app.enable("trust proxy");
 
-// Static Files
+// Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Security Headers
+// Security headers
 app.use(helmet());
 
-// Body Parser
+// Body parsers
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
-// Sanitize inputs (NoSQL query attacks)
+// Sanitization
 app.use(mongoSanitize());
-
-// Sanitize inputs (XSS)
 app.use(xss());
 
-// Preventing parameter tampering
+// Prevent HTTP parameter pollution
 app.use(hpp());
 
-// Rate Limiter
-const limiter = rateLimit({
-  max: 100,
-  windowMs: 60 * 60 * 100,
-  message: 'Too many requests! Please try again in an hour!',
-});
-
-// Development Logs
+// Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Compress the responses
+// Compression
 app.use(compression());
 
-// Routing
+// Rate Limiter
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests! Please try again in an hour!',
+});
 app.use('/api', limiter);
+
+// ---------------------
+// API ROUTES
+// ---------------------
 app.use('/api/v1/employees', employeeRouter);
 app.use('/api/v1/floors', floorRouter);
 app.use('/api/v1/orders', orderRouter);
@@ -88,23 +89,20 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/visitors', visitorRouter);
 app.use('/api/v1/vouchers', voucherRouter);
 
-// Defining undefined routes.
-// If we are able to reach this point - then no route match.
-// If we are able to reach other routes - then the request - response cycle would have been finished in the routes.
-// If next() is passed anything - Express will assume that it is an error.
-// ✅ Test route to verify backend connection
+// Test Route
 app.get('/api/test', (req, res) => {
   res.status(200).json({
     status: 'success',
-    message: 'Backend is connected successfully 🚀',
+    message: 'Backend is connected successfully 🚀'
   });
 });
 
+// Handle undefined routes
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
-// Middleware for error handling.
+// Error handler
 app.use(errorMiddleware);
 
 module.exports = app;
