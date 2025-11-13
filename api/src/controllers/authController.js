@@ -4,9 +4,8 @@ const AppError = require('../utils/appError');
 const User = require('../models/userModel');
 
 /**
- * This function is used to sign the JWT to check whether the token is valid or not.
- *
- * @param {id} id - ID of the user.
+ * Sign JWT.
+ * @param {id} id - user id
  */
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -14,30 +13,34 @@ const signToken = (id) =>
   });
 
 /**
- * This function is used to create and send token to user's cookie.
- *
- * @param {user} user - Currently logged in user
- * @param {statusCode} statusCode - Status code of the request
- * @param {req} req - Express's request object
- * @param {res} res - Express's response object
+ * Create and send token via cookie + JSON response.
  */
 const createAndSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
+
+  // Calculate expiry (JWT_COOKIE_EXPIRES_IN is expected in hours)
+  const expires = new Date(
+    Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 60 * 60 * 1000
+  );
+
+  // Cookie options
   const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 60 * 60 * 1000,
-    ),
+    expires,
     httpOnly: true,
-    // Send a cookie to be secure if its on a production environment.
-    // Check if the connection is secure, OR if the header contains HTTPS.
+    // For production we must explicitly allow cross-site cookies:
+    // - secure: true ensures cookie is only sent over HTTPS
+    // - sameSite: 'none' allows cross-site sending
+    // We still support dev by checking req.secure / x-forwarded-proto
     secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    sameSite: 'none',
   };
 
-  // Send a cookie (back-end, must be assigned again in Next.js's proxy).
+  // Send cookie
   res.cookie('jwt', token, cookieOptions);
 
-  // Remove passwords from output, then send response.
+  // Remove password from output
   user.password = undefined;
+
   res.status(statusCode).json({
     status: 'success',
     token,
@@ -46,11 +49,7 @@ const createAndSendToken = (user, statusCode, req, res) => {
 };
 
 /**
- * This function is used to handle user registration.
- *
- * @param {req} req - Express's request object
- * @param {res} res - Express's response object
- * @param {next} next - Express's next function
+ * Signup
  */
 exports.signup = asyncHandler(async (req, res, next) => {
   const newUser = await User.create({
@@ -71,11 +70,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * This function is used to handle user when he/she is logging in.
- *
- * @param {req} req - Express's request object
- * @param {res} res - Express's response object
- * @param {next} next - Express's next function
+ * Login
  */
 exports.login = asyncHandler(async (req, res, next) => {
   const { username, password } = req.body;
@@ -97,8 +92,8 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(
       new AppError(
         'Your account is not activated yet! Please check your email!',
-        401,
-      ),
+        401
+      )
     );
   }
 
@@ -107,17 +102,18 @@ exports.login = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * This function is used to handle a user's logging out.
- *
- * @param {req} req - Express's request object
- * @param {res} res - Express's response object
- * @param {next} next - Express's next function
+ * Logout
  */
 exports.logout = asyncHandler(async (req, res, next) => {
-  res.cookie('jwt', 'loggedOut', {
+  // Make sure logout cookie uses same options so browser will overwrite/remove it.
+  const cookieOptions = {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
-  });
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    sameSite: 'none',
+  };
+
+  res.cookie('jwt', 'loggedOut', cookieOptions);
 
   res.status(200).json({
     status: 'success',
