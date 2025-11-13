@@ -31,7 +31,7 @@ const createAndSendToken = (user, statusCode, req, res) => {
     // - secure: true ensures cookie is only sent over HTTPS
     // - sameSite: 'none' allows cross-site sending
     // We still support dev by checking req.secure / x-forwarded-proto
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    secure: true,
     sameSite: 'none',
   };
 
@@ -109,7 +109,7 @@ exports.logout = asyncHandler(async (req, res, next) => {
   const cookieOptions = {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    secure: true,
     sameSite: 'none',
   };
 
